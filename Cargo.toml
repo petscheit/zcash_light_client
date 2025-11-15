@@ -5,6 +5,7 @@ members = [
 ]
 
 [workspace.dependencies]
+cairo-vm-base = { git = "https://github.com/bankaixyz/cairo-vm-base" }
 zcash_primitives = { git = "https://github.com/zcash/librustzcash" }
 blake2b_simd = { version = "1", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }

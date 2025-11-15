@@ -1,5 +1,5 @@
 use crate::difficulty::filter::DiffError;
-use crate::difficulty::target::{target_from_nbits, target_to_nbits, Target};
+use crate::difficulty::target::{Target, target_from_nbits, target_to_nbits};
 
 /// Sliding window of header data needed for contextual difficulty.
 ///
@@ -160,7 +160,10 @@ fn threshold(ctx: &DifficultyContext) -> Target {
     let ats_bounded = clamp_timespan(ats) as u32;
 
     let mean = mean_target(ctx);
-    let scaled = mul_target_u32(&div_target_u32(&mean, AVERAGING_WINDOW_TIMESPAN as u32), ats_bounded);
+    let scaled = mul_target_u32(
+        &div_target_u32(&mean, AVERAGING_WINDOW_TIMESPAN as u32),
+        ats_bounded,
+    );
     min_target(&scaled, &crate::difficulty::filter::POW_LIMIT_LE)
 }
 
@@ -198,5 +201,3 @@ pub fn verify_difficulty(
     }
     Ok(())
 }
-
-

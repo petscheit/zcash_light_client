@@ -1,6 +1,6 @@
 use core::fmt;
 
-use crate::difficulty::target::{cmp_target, target_from_nbits, Target};
+use crate::difficulty::target::{Target, cmp_target, target_from_nbits};
 
 /// Errors that can occur during difficulty verification.
 #[derive(Debug)]
@@ -77,5 +77,3 @@ pub fn verify_difficulty_filter(header_hash: &[u8; 32], n_bits: u32) -> Result<(
 pub fn verify_difficulty(header_hash: &[u8; 32], n_bits: u32) -> Result<(), DiffError> {
     verify_difficulty_filter(header_hash, n_bits)
 }
-
-

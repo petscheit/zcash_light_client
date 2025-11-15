@@ -83,9 +83,8 @@ pub fn target_to_nbits(target_le: &Target) -> u32 {
         }
         mant <<= 8 * (3 - size);
     } else {
-        mant = (bytes_be[i] as u32) << 16
-            | (bytes_be[i + 1] as u32) << 8
-            | (bytes_be[i + 2] as u32);
+        mant =
+            (bytes_be[i] as u32) << 16 | (bytes_be[i + 1] as u32) << 8 | (bytes_be[i + 2] as u32);
     }
 
     if mant & 0x0080_0000 != 0 {
@@ -95,5 +94,3 @@ pub fn target_to_nbits(target_le: &Target) -> u32 {
 
     (size << 24) | (mant & 0x007f_ffff)
 }
-
-

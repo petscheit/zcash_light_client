@@ -1,4 +1,4 @@
-use std::fs::{create_dir_all, File, OpenOptions};
+use std::fs::{File, OpenOptions, create_dir_all};
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 
@@ -19,11 +19,10 @@ pub struct FileStore {
 impl FileStore {
     pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let p = path.as_ref().to_path_buf();
-        if let Some(dir) = p.parent() {
-            if !dir.exists() {
+        if let Some(dir) = p.parent()
+            && !dir.exists() {
                 create_dir_all(dir)?;
             }
-        }
         if !p.exists() {
             File::create(&p)?;
         }
@@ -31,8 +30,12 @@ impl FileStore {
     }
 
     fn append_record(&self, rec: &Record) -> io::Result<()> {
-        let mut file = OpenOptions::new().create(true).append(true).open(&self.path)?;
-        let line = serde_json::to_string(rec).map_err(|e| io::Error::new(io::ErrorKind::Other, e.to_string()))?;
+        let mut file = OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&self.path)?;
+        let line = serde_json::to_string(rec)
+            .map_err(|e| io::Error::other(e.to_string()))?;
         file.write_all(line.as_bytes())?;
         file.write_all(b"\n")?;
         Ok(())
@@ -59,11 +62,10 @@ impl Store for FileStore {
             if l.trim().is_empty() {
                 continue;
             }
-            if let Ok(rec) = serde_json::from_str::<Record>(&l) {
-                if rec.height == height {
+            if let Ok(rec) = serde_json::from_str::<Record>(&l)
+                && rec.height == height {
                     found = Some(rec.header_hex);
                 }
-            }
         }
         Ok(found)
     }
@@ -99,5 +101,3 @@ impl Store for FileStore {
         Ok(recs)
     }
 }
-
-

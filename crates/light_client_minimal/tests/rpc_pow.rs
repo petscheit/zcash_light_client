@@ -61,5 +61,3 @@ async fn rpc_verify_header_blocks() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
-

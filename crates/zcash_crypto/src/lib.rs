@@ -5,15 +5,15 @@
 //! - Difficulty filter: `verify_difficulty` (alias for `verify_difficulty_filter`)
 //! - Contextual difficulty: `difficulty::context::{DifficultyContext, expected_nbits, verify_difficulty}`
 //! - Combined helpers: `verify_pow`, `verify_pow_with_context`
-mod equihash;
 pub mod difficulty;
+mod equihash;
 
 use core::fmt;
 use zcash_primitives::block::BlockHeader;
 
-pub use equihash::{verify_equihash_solution, verify_equihash_solution_with_params, Error, Kind};
-pub use difficulty::filter::{verify_difficulty as verify_difficulty, verify_difficulty_filter, DiffError};
 pub use difficulty::context::DifficultyContext;
+pub use difficulty::filter::{DiffError, verify_difficulty, verify_difficulty_filter};
+pub use equihash::{Error, Kind, verify_equihash_solution, verify_equihash_solution_with_params};
 
 /// Combined Equihash + difficulty verification error.
 #[derive(Debug)]
@@ -85,5 +85,3 @@ pub fn verify_pow_with_context(
     ctx.push_header(height, header.time, header.bits);
     Ok(())
 }
-
-

@@ -2,7 +2,7 @@ use core::fmt;
 
 use crate::net::rpc::{RpcClient, RpcError};
 use crate::store::Store;
-use zcash_crypto::{verify_pow_with_context, DifficultyContext};
+use zcash_crypto::{DifficultyContext, verify_pow_with_context};
 use zcash_primitives::block::BlockHeader;
 
 /// Errors that can occur when verifying a header fetched via RPC.
@@ -11,7 +11,9 @@ pub enum VerifyHeaderError {
     Rpc(RpcError),
     Pow(VerifyPowError),
     /// Not enough prior headers are available to build the difficulty context.
-    InsufficientContext { height: u32 },
+    InsufficientContext {
+        height: u32,
+    },
 }
 
 impl fmt::Display for VerifyHeaderError {
@@ -146,7 +148,10 @@ pub async fn sync_chain<S: Store>(
     }
 
     // Determine effective start height from persistence, if available.
-    let effective_start = match store.tip().map_err(|e| VerifyHeaderError::Rpc(RpcError::Client(format!("store tip: {e}"))))? {
+    let effective_start = match store
+        .tip()
+        .map_err(|e| VerifyHeaderError::Rpc(RpcError::Client(format!("store tip: {e}"))))?
+    {
         Some(tip) => match tip.checked_add(1) {
             Some(h) => h,
             None => return Ok(()),
@@ -183,5 +188,3 @@ pub async fn sync_chain<S: Store>(
 
     Ok(())
 }
-
-

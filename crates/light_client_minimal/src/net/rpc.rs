@@ -1,8 +1,8 @@
 use hex;
-use reqwest::{self, header, Client, StatusCode, Url};
+use reqwest::{self, Client, StatusCode, Url, header};
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
-use serde_json::{self, json, Value};
+use serde_json::{self, Value, json};
 use std::fmt;
 
 use zcash_primitives::block::{BlockHash, BlockHeader};
@@ -152,21 +152,19 @@ impl RpcClient {
     /// Returns the hash of the best chain tip (`getbestblockhash`).
     pub async fn get_best_block_hash(&self) -> Result<BlockHash, RpcError> {
         let hash_hex: String = self.call("getbestblockhash", &[]).await?;
-        Ok(decode_block_hash_from_hex(&hash_hex)?)
+        decode_block_hash_from_hex(&hash_hex)
     }
 
     /// Returns the block hash at the given height (`getblockhash`).
     pub async fn get_block_hash(&self, height: u32) -> Result<BlockHash, RpcError> {
         let hash_hex: String = self.call("getblockhash", &[json!(height)]).await?;
-        Ok(decode_block_hash_from_hex(&hash_hex)?)
+        decode_block_hash_from_hex(&hash_hex)
     }
 
     /// Returns the raw block bytes for the given hash (`getblock` with `verbosity = 0`).
     pub async fn get_block(&self, hash: &BlockHash) -> Result<Vec<u8>, RpcError> {
         let hash_hex = encode_block_hash_to_hex(hash);
-        let block_hex: String = self
-            .call("getblock", &[json!(hash_hex), json!(0)])
-            .await?;
+        let block_hex: String = self.call("getblock", &[json!(hash_hex), json!(0)]).await?;
         Ok(hex::decode(block_hex)?)
     }
 
@@ -177,10 +175,7 @@ impl RpcClient {
     }
 
     /// Convenience helper: fetches the header at a given height.
-    pub async fn get_block_header_by_height(
-        &self,
-        height: u32,
-    ) -> Result<BlockHeader, RpcError> {
+    pub async fn get_block_header_by_height(&self, height: u32) -> Result<BlockHeader, RpcError> {
         let hash = self.get_block_hash(height).await?;
         self.get_block_header(&hash).await
     }
@@ -198,5 +193,3 @@ fn encode_block_hash_to_hex(hash: &BlockHash) -> String {
     bytes.reverse();
     hex::encode(bytes)
 }
-
-

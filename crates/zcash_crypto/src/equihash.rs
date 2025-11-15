@@ -26,7 +26,7 @@ struct Params {
 impl Params {
     /// Construct validated parameters.
     fn new(n: u32, k: u32) -> Option<Self> {
-        if (n % 8 == 0) && (k >= 3) && (k < n) && (n % (k + 1) == 0) {
+        if n.is_multiple_of(8) && (k >= 3) && (k < n) && n.is_multiple_of(k + 1) {
             Some(Self { n, k })
         } else {
             None
@@ -46,7 +46,7 @@ impl Params {
     }
     /// Collision length rounded up to whole bytes.
     fn collision_byte_length(&self) -> usize {
-        (self.collision_bit_length() + 7) / 8
+        self.collision_bit_length().div_ceil(8)
     }
 }
 
@@ -117,7 +117,7 @@ fn expand_array(vin: &[u8], bit_len: usize, byte_pad: usize) -> Vec<u8> {
     assert!(bit_len >= 8);
     assert!((u32::BITS as usize) >= 7 + bit_len);
 
-    let out_width = (bit_len + 7) / 8 + byte_pad;
+    let out_width = bit_len.div_ceil(8) + byte_pad;
     let out_len = 8 * out_width * vin.len() / bit_len;
 
     if out_len == vin.len() {
@@ -154,10 +154,10 @@ fn indices_from_minimal(p: Params, minimal: &[u8]) -> Option<Vec<u32>> {
     if minimal.len() != ((1 << p.k) * (c_bit_len + 1)) / 8 {
         return None;
     }
-    let digit_bytes = ((c_bit_len + 1) + 7) / 8;
+    let digit_bytes = (c_bit_len + 1).div_ceil(8);
     let byte_pad = core::mem::size_of::<u32>() - digit_bytes;
     let expanded = expand_array(minimal, c_bit_len + 1, byte_pad);
-    if expanded.len() % 4 != 0 {
+    if !expanded.len().is_multiple_of(4) {
         return None;
     }
     let mut ret = Vec::with_capacity(expanded.len() / 4);
@@ -303,5 +303,3 @@ pub fn verify_equihash_solution_with_params(
         Err(Error(Kind::NonZeroRootHash))
     }
 }
-
-

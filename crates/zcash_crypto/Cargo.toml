@@ -1,0 +1,13 @@
+[package]
+name = "zcash_crypto"
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+description = "Minimal Zcash verification primitives: Equihash and difficulty"
+
+[dependencies]
+blake2b_simd.workspace = true
+sha2.workspace = true
+zcash_primitives.workspace = true
+
+

@@ -769,17 +769,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cairo-runner"
-version = "0.1.0"
-dependencies = [
- "cairo-vm-base",
- "serde",
- "serde_json",
- "thiserror 2.0.17",
- "tracing",
-]
-
-[[package]]
 name = "cairo-vm"
 version = "3.0.0-rc.3"
 source = "git+https://github.com/lambdaclass/cairo-vm?tag=v3.0.0-rc.3#7d0cb7e32e487fc65ee9aba92bf22a22267679ea"
@@ -826,6 +815,17 @@ dependencies = [
  "num-bigint",
  "num-traits",
  "serde",
+]
+
+[[package]]
+name = "cairo_runner"
+version = "0.1.0"
+dependencies = [
+ "cairo-vm-base",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.17",
+ "tracing",
 ]
 
 [[package]]
@@ -4631,6 +4631,7 @@ name = "zcash_crypto"
 version = "0.1.0"
 dependencies = [
  "blake2b_simd",
+ "cairo_runner",
  "sha2 0.10.9",
  "zcash_primitives",
 ]

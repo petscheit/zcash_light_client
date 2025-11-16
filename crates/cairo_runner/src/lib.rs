@@ -2,6 +2,7 @@
 pub mod error;
 pub mod hint_processor;
 pub mod types;
+pub mod hints;
 
 use crate::types::InputData;
 use crate::{error::Error, hint_processor::CustomHintProcessor};

@@ -27,6 +27,8 @@ use cairo_vm_base::vm::cairo_vm::{
 // };
 use std::any::Any;
 use std::collections::HashMap;
+
+use crate::hints::{write_inputs, WRITE_INPUTS_HINT};
 // use stone_verifier_hints::hints::get_hints as get_stone_verifier_hints;
 
 pub struct CustomHintProcessor {
@@ -76,32 +78,18 @@ impl HintProcessorLogic for CustomHintProcessor {
         if let Some(hpd) = hint_data.downcast_ref::<HintProcessorData>() {
             let hint_code = hpd.code.as_str();
 
-            // let res = match hint_code {
-            //     // HINT_WRITE_CONSENSUS_INPUTS => {
-            //     //     write_consensus_inputs(vm, exec_scopes, hpd, constants)
-            //     // }
-            //     // HINT_WRITE_STONE_PROOF_INPUTS => {
-            //     //     write_stone_proof_inputs(vm, exec_scopes, hpd, constants)
-            //     // }
-            //     // HINT_WRITE_COMMITTEE_UPDATE_INPUTS => {
-            //     //     write_committee_update_inputs(vm, exec_scopes, hpd, constants)
-            //     // }
-            //     // HINT_WRITE_EXPECTED_PROOF_OUTPUT => {
-            //     //     write_expected_proof_output(vm, exec_scopes, hpd, constants)
-            //     // }
-            //     // HINT_ASSERT_OUTPUT => assert_output(vm, exec_scopes, hpd, constants),
-            //     // HINT_WRITE_BEACON_INPUT => write_beacon_input(vm, exec_scopes, hpd, constants),
-            //     // HINT_WRITE_EXECUTION_INPUT => {
-            //     //     write_execution_input(vm, exec_scopes, hpd, constants)
-            //     // }
-            //     _ => Err(HintError::UnknownHint(
-            //         hint_code.to_string().into_boxed_str(),
-            //     )),
-            // };
+            let res = match hint_code {
+                WRITE_INPUTS_HINT => {
+                    write_inputs(vm, exec_scopes, hpd, constants)
+                },
+                _ => Err(HintError::UnknownHint(
+                    hint_code.to_string().into_boxed_str(),
+                )),
+            };
 
-            // if !matches!(res, Err(HintError::UnknownHint(_))) {
-            //     return res.map(|_| HintExtension::default());
-            // }
+            if !matches!(res, Err(HintError::UnknownHint(_))) {
+                return res.map(|_| HintExtension::default());
+            }
 
             // First try our custom hints
             if let Some(hint_impl) = self.hints.get(hint_code) {

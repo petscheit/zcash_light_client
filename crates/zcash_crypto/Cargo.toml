@@ -9,5 +9,6 @@ description = "Minimal Zcash verification primitives: Equihash and difficulty"
 blake2b_simd.workspace = true
 sha2.workspace = true
 zcash_primitives.workspace = true
+cairo_runner.workspace = true
 
 

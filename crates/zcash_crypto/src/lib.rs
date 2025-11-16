@@ -6,7 +6,7 @@
 //! - Contextual difficulty: `difficulty::context::{DifficultyContext, expected_nbits, verify_difficulty}`
 //! - Combined helpers: `verify_pow`, `verify_pow_with_context`
 pub mod difficulty;
-mod equihash;
+pub mod equihash;
 
 use core::fmt;
 use zcash_primitives::block::BlockHeader;

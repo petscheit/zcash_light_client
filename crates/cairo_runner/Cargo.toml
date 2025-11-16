@@ -1,5 +1,5 @@
 [package]
-name = "cairo-runner"
+name = "cairo_runner"
 version = "0.1.0"
 edition = "2021"
 

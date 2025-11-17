@@ -20,11 +20,19 @@ fn main() {
     powheader.extend_from_slice(&header.bits.to_le_bytes());
     powheader.extend_from_slice(&header.nonce);
 
+    let header_bytes: Vec<u32> = powheader.chunks_exact(4).map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect();
     let p = Params::new(200, 9).unwrap();
+
+    // println!("indices_per_hash_output {:?}", p.indices_per_hash_output());
+    // println!("hash_output {:?}", p.hash_output());
+    // println!("collision_bit_length {:?}", p.collision_bit_length());
+    // println!("collision_byte_length {:?}", p.collision_byte_length());
+
+
     let solution_indexes = equihash::indices_from_minimal(p, header.solution.as_slice()).unwrap();
 
     let input = InputData {
-        header_bytes: powheader,
+        header_bytes: header_bytes,
         solution_indexes
     };
 

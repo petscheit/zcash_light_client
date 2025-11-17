@@ -9,6 +9,9 @@ from starkware.cairo.common.cairo_builtins import (
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.alloc import alloc
 
+from cairo.src.constants import Parameters
+from cairo.src.hashing import generate_hash, compute_leaf_hash
+from cairo.src.debug import info_felt_hex
 
 func main{
     output_ptr: felt*,
@@ -25,12 +28,37 @@ func main{
 }() {
     alloc_locals;
 
-    let (solution_indicies: felt*) = alloc();
-    let (header_bytes: felt*) = alloc();
+    let (solution_indicies: felt*) = alloc(); // as u32
+    let (header_bytes: felt*) = alloc(); // as 32 bit chunks
 
     %{ WRITE_INPUTS %}
 
+    let result = compute_leaf_hash(header_bytes, 4755);
+
+    let r0 = result[0];
+    let r1 = result[1];
+    let r2 = result[2];
+    let r3 = result[3];
+    let r4 = result[4];
+    let r5 = result[5];
+    let r6 = result[6];
+    let r7 = result[7];
+    let r8 = result[8];
+
+    info_felt_hex(r0);
+    info_felt_hex(r1);
+    info_felt_hex(r2);
+    info_felt_hex(r3);
+    info_felt_hex(r4);
+    info_felt_hex(r5);
+    info_felt_hex(r6);
+    info_felt_hex(r7);
+    info_felt_hex(r8);
+
+
     
+
+
 
     return();
 }

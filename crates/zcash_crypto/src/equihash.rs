@@ -33,19 +33,19 @@ impl Params {
         }
     }
     /// Number of indices represented per BLAKE2b digest output.
-    fn indices_per_hash_output(&self) -> u32 {
+    pub fn indices_per_hash_output(&self) -> u32 {
         512 / self.n
     }
     /// Digest length for BLAKE2b personalization for these parameters.
-    fn hash_output(&self) -> u8 {
+    pub fn hash_output(&self) -> u8 {
         (self.indices_per_hash_output() * self.n / 8) as u8
     }
     /// Collision length in bits (required equal prefix per merge level).
-    fn collision_bit_length(&self) -> usize {
+    pub fn collision_bit_length(&self) -> usize {
         (self.n / (self.k + 1)) as usize
     }
     /// Collision length rounded up to whole bytes.
-    fn collision_byte_length(&self) -> usize {
+    pub fn collision_byte_length(&self) -> usize {
         self.collision_bit_length().div_ceil(8)
     }
 }
@@ -107,13 +107,16 @@ fn initialise_state(n: u32, k: u32, digest_len: u8) -> Blake2bState {
 fn generate_hash(base_state: &Blake2bState, i: u32) -> Blake2bHash {
     let mut state = base_state.clone();
     state.update(&i.to_le_bytes());
-    state.finalize()
+    let hash = state.finalize();
+    println!("HASH: {:?}", hash);
+    hash
 }
 
 /// Expand a compact big-endian bitstring into fixed-width, optionally byte-padded chunks.
 ///
 /// Used for both digest-slice expansion and minimal solution expansion to big-endian `u32`s.
 fn expand_array(vin: &[u8], bit_len: usize, byte_pad: usize) -> Vec<u8> {
+    // println!("v in: {:?}", vin);
     assert!(bit_len >= 8);
     assert!((u32::BITS as usize) >= 7 + bit_len);
 
@@ -143,6 +146,7 @@ fn expand_array(vin: &[u8], bit_len: usize, byte_pad: usize) -> Vec<u8> {
             j += out_width;
         }
     }
+    // println!("v out: {:?}", vout);
     vout
 }
 
@@ -168,7 +172,7 @@ pub fn indices_from_minimal(p: Params, minimal: &[u8]) -> Option<Vec<u32>> {
 }
 
 /// Tree node holding the current reduced hash bytes and the ordered index list.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 struct Node {
     hash: Vec<u8>,
     indices: Vec<u32>,
@@ -179,11 +183,14 @@ impl Node {
     /// - Take the appropriate `n`-bit slice from the group digest.
     /// - Expand to bytes (big-endian) to form the leaf hash.
     fn new(p: &Params, state: &Blake2bState, i: u32) -> Self {
+        println!("i: {:?}", i);
         let hash = generate_hash(state, i / p.indices_per_hash_output());
         let start = ((i % p.indices_per_hash_output()) * p.n / 8) as usize;
         let end = start + (p.n as usize) / 8;
+        let expanded = expand_array(&hash.as_bytes()[start..end], p.collision_bit_length(), 0);
+        println!("expanded: {:?}", expanded);
         Node {
-            hash: expand_array(&hash.as_bytes()[start..end], p.collision_bit_length(), 0),
+            hash: expanded,
             indices: vec![i],
         }
     }
@@ -295,7 +302,6 @@ pub fn verify_equihash_solution_with_params(
 
     let mut state = initialise_state(p.n, p.k, p.hash_output());
     state.update(powheader);
-    println!("state: {:?}", state);
 
     let root = tree_validator(&p, &state, &indices)?;
     if root.is_zero(p.collision_byte_length()) {

@@ -821,6 +821,7 @@ dependencies = [
 name = "cairo_runner"
 version = "0.1.0"
 dependencies = [
+ "blake2b_simd",
  "cairo-vm-base",
  "serde",
  "serde_json",

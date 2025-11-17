@@ -3,6 +3,7 @@ pub mod error;
 pub mod hint_processor;
 pub mod types;
 pub mod hints;
+pub mod constants;
 
 use crate::types::InputData;
 use crate::{error::Error, hint_processor::CustomHintProcessor};
@@ -86,7 +87,7 @@ pub fn run_stwo(
         exec_scopes,
     )?;
 
-    info!("Resources: {:?}", cairo_runner.get_execution_resources());
+    println!("Resources: {:?}", cairo_runner.get_execution_resources());
     let files_start = std::time::Instant::now();
     generate_stwo_files(&cairo_runner, output_dir)?;
     info!(
@@ -137,7 +138,7 @@ pub fn run(path: &str, input: InputData, log_level: &'static str) -> Result<Cair
         exec_scopes,
     )?;
 
-    info!("Resources: {:?}", cairo_runner.get_execution_resources());
+    println!("Resources: {:?}", cairo_runner.get_execution_resources());
 
     let pie = cairo_runner.get_cairo_pie()?;
     Ok(pie)

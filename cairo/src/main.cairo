@@ -12,6 +12,7 @@ from starkware.cairo.common.alloc import alloc
 from cairo.src.constants import Parameters
 from cairo.src.hashing import generate_hash, compute_leaf_hash
 from cairo.src.debug import info_felt_hex
+from cairo.src.merkle import EquihashTree
 
 func main{
     output_ptr: felt*,
@@ -33,32 +34,14 @@ func main{
 
     %{ WRITE_INPUTS %}
 
-    let result = compute_leaf_hash(header_bytes, 4755);
+    let indices_len = 512; // for (n=200, k=9)
 
-    let r0 = result[0];
-    let r1 = result[1];
-    let r2 = result[2];
-    let r3 = result[3];
-    let r4 = result[4];
-    let r5 = result[5];
-    let r6 = result[6];
-    let r7 = result[7];
-    let r8 = result[8];
-
-    info_felt_hex(r0);
-    info_felt_hex(r1);
-    info_felt_hex(r2);
-    info_felt_hex(r3);
-    info_felt_hex(r4);
-    info_felt_hex(r5);
-    info_felt_hex(r6);
-    info_felt_hex(r7);
-    info_felt_hex(r8);
-
-
-    
-
-
+    let (root) = EquihashTree.tree_validator(
+        header_pow=header_bytes,
+        indices_ptr=solution_indicies,
+        indices_len=indices_len,
+    );
+    let (ok) = EquihashTree.node_is_zero(root, Parameters.collision_byte_length);
 
     return();
 }

@@ -96,17 +96,17 @@ pub fn run_stwo(
     );
     if prove {
         let prove_start = std::time::Instant::now();
-        // let res = bankai_stwo_prover::generate_proof(
-        //     &Path::new(output_dir).join("pub.json"),
-        //     &Path::new(output_dir).join("priv.json"),
-        //     Some(true),
-        //     Some(bankai_stwo_prover::ProofFormat::CairoSerde),
-        // )?;
-        // info!(
-        //     "Proof generated successfully in {:.1?}: {:?}",
-        //     prove_start.elapsed(),
-        //     res
-        // );
+        let res = bankai_stwo_prover::generate_proof(
+            &Path::new(output_dir).join("pub.json"),
+            &Path::new(output_dir).join("priv.json"),
+            Some(true),
+            Some(bankai_stwo_prover::ProofFormat::CairoSerde),
+        )?;
+        info!(
+            "Proof generated successfully in {:.1?}: {:?}",
+            prove_start.elapsed(),
+            res
+        );
     }
 
     info!("STWO end-to-end took: {:.1?}", overall_start.elapsed());

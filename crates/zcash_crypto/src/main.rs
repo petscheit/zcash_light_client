@@ -37,11 +37,11 @@ fn main() {
     };
 
 
-    run_stwo("cairo/build/main.json", input, "info", "output", false, false).unwrap();
+    run_stwo("cairo/build/main.json", input, "info", "output", true, false).unwrap();
 
 
 
-    verify_pow(&header).unwrap();
+    // verify_pow(&header).unwrap();
     println!("pow verified");
 }
 

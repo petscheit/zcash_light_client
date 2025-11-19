@@ -108,7 +108,7 @@ fn generate_hash(base_state: &Blake2bState, i: u32) -> Blake2bHash {
     let mut state = base_state.clone();
     state.update(&i.to_le_bytes());
     let hash = state.finalize();
-    println!("HASH: {:?}", hash);
+    // println!("HASH: {:?}", hash);
     hash
 }
 
@@ -183,12 +183,12 @@ impl Node {
     /// - Take the appropriate `n`-bit slice from the group digest.
     /// - Expand to bytes (big-endian) to form the leaf hash.
     fn new(p: &Params, state: &Blake2bState, i: u32) -> Self {
-        println!("i: {:?}", i);
+        // println!("i: {:?}", i);
         let hash = generate_hash(state, i / p.indices_per_hash_output());
         let start = ((i % p.indices_per_hash_output()) * p.n / 8) as usize;
         let end = start + (p.n as usize) / 8;
         let expanded = expand_array(&hash.as_bytes()[start..end], p.collision_bit_length(), 0);
-        println!("expanded: {:?}", expanded);
+        // println!("expanded: {:?}", expanded);
         Node {
             hash: expanded,
             indices: vec![i],

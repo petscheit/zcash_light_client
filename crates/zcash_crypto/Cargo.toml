@@ -12,3 +12,4 @@ zcash_primitives.workspace = true
 cairo_runner.workspace = true
 
 
+hex = "0.4.3"

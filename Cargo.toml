@@ -2,12 +2,14 @@
 members = [
     "crates/zcash_crypto",
     "crates/light_client_minimal",
-    "crates/cairo_runner"
+    "crates/cairo_runner",
+    #"crates/stwo_prover"
 ]
 
 [workspace.dependencies]
 cairo-vm-base = { git = "https://github.com/bankaixyz/cairo-vm-base" }
 cairo_runner = { path = "crates/cairo_runner" }
+#stwo_prover = { path = "crates/stwo_prover" }
 zcash_primitives = { git = "https://github.com/zcash/librustzcash" }
 blake2b_simd = { version = "1", default-features = false }
 serde = { version = "1", default-features = false, features = ["derive"] }
@@ -19,3 +21,15 @@ tokio = "1.48.0"
 thiserror = { version = "2.0.9" }
 tracing = { version = "0.1.41" }
 tracing-subscriber = { version = "0.3.20" }
+stwo_cairo_prover = { git = "https://github.com/starkware-libs/stwo-cairo" }
+stwo_cairo_utils = { git = "https://github.com/starkware-libs/stwo-cairo" }
+stwo-cairo-adapter = { git = "https://github.com/starkware-libs/stwo-cairo" }
+stwo-cairo-serialize = { git = "https://github.com/starkware-libs/stwo-cairo" }
+cairo-air = { git = "https://github.com/starkware-libs/stwo-cairo" }
+stwo = { git = "https://github.com/starkware-libs/stwo", rev = "d9176e6e22319370a8501f799829b920c0db2eac", features = [
+    "parallel",
+    "prover",
+], default-features = false }
+sonic-rs = { version = "0.3.17" }
+starknet-ff = { version = "0.3.7" }
+

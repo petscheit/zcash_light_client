@@ -11,8 +11,9 @@ from starkware.cairo.common.alloc import alloc
 
 from cairo.src.constants import Parameters
 from cairo.src.hashing import generate_hash, compute_leaf_hash
-from cairo.src.debug import info_felt_hex
+from cairo.src.debug import info_felt_hex, info_uint256
 from cairo.src.merkle import EquihashTree
+from cairo.src.difficulty import get_nbits, target_from_nbits
 
 func main{
     output_ptr: felt*,
@@ -36,12 +37,19 @@ func main{
 
     let indices_len = 512; // for (n=200, k=9)
 
+    let (nbits) = get_nbits(header_bytes);
+    info_felt_hex(nbits);
+    let (target) = target_from_nbits(nbits);
+    info_uint256(target);
+
     let (root) = EquihashTree.tree_validator(
         header_pow=header_bytes,
         indices_ptr=solution_indicies,
         indices_len=indices_len,
     );
     let (ok) = EquihashTree.node_is_zero(root, Parameters.collision_byte_length);
+
+    assert ok = 1;
 
     return();
 }

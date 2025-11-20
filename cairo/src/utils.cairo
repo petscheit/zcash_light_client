@@ -228,6 +228,143 @@ func construct_header_chunks_inner{range_check_ptr}(header_pow: felt*, solution:
     return construct_header_chunks_inner(header_pow, solution, index + 1);
 }
 
+// Unpack big-endian u32 solution words into a contiguous byte array.
+func unpack_solution_words_to_bytes{range_check_ptr}(
+    solution_words: felt*, num_words: felt
+) -> (bytes_ptr: felt*) {
+    alloc_locals;
+
+    let (bytes_ptr: felt*) = alloc();
+
+    unpack_solution_words_to_bytes_inner(
+        solution_words, num_words, bytes_ptr, 0, 0
+    );
+
+    return (bytes_ptr,);
+}
+
+func unpack_solution_words_to_bytes_inner{range_check_ptr}(
+    solution_words: felt*, num_words: felt,
+    bytes_ptr: felt*,
+    word_idx: felt, byte_offset: felt,
+) {
+    if (word_idx == num_words) {
+        return ();
+    }
+
+    let word = [solution_words + word_idx];
+
+    // Split u32 word into 4 big-endian bytes.
+    let (b0, rem0) = unsigned_div_rem(word, 16777216);  // 2^24
+    let (b1, rem1) = unsigned_div_rem(rem0, 65536);     // 2^16
+    let (b2, b3) = unsigned_div_rem(rem1, 256);         // 2^8
+
+    assert [bytes_ptr + byte_offset] = b0;
+    assert [bytes_ptr + byte_offset + 1] = b1;
+    assert [bytes_ptr + byte_offset + 2] = b2;
+    assert [bytes_ptr + byte_offset + 3] = b3;
+
+    let next_word_idx = word_idx + 1;
+    let next_byte_offset = byte_offset + 4;
+    return unpack_solution_words_to_bytes_inner(
+        solution_words, num_words, bytes_ptr, next_word_idx, next_byte_offset
+    );
+}
+
+// Read one Equihash index (digit_bit_length bits) from a big-endian byte stream.
+func read_index_from_bytes{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    bytes_ptr: felt*,
+    byte_idx: felt, bit_idx: felt,
+    bit_count: felt, acc: felt,
+) -> (new_byte_idx: felt, new_bit_idx: felt, value: felt) {
+    if (bit_count == Parameters.digit_bit_length) {
+        return (byte_idx, bit_idx, acc);
+    }
+
+    let byte = [bytes_ptr + byte_idx];
+    let (bit) = extract_bit_from_byte(byte, bit_idx);
+
+    let new_acc = acc + acc + bit;
+    let next_bit_count = bit_count + 1;
+
+    if (bit_idx == 7) {
+        let next_bit_idx = 0;
+        let next_byte_idx = byte_idx + 1;
+        return read_index_from_bytes(
+            bytes_ptr,
+            next_byte_idx, next_bit_idx,
+            next_bit_count, new_acc,
+        );
+    } else {
+        let next_bit_idx = bit_idx + 1;
+        let next_byte_idx = byte_idx;
+        return read_index_from_bytes(
+            bytes_ptr,
+            next_byte_idx, next_bit_idx,
+            next_bit_count, new_acc,
+        );
+    }
+}
+
+func indices_from_minimal_inner{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    bytes_ptr: felt*,
+    indices_ptr: felt*,
+    idx: felt,
+    byte_idx: felt,
+    bit_idx: felt,
+) -> (final_byte_idx: felt, final_bit_idx: felt) {
+    if (idx == Parameters.num_indices) {
+        return (byte_idx, bit_idx);
+    }
+
+    let (next_byte_idx, next_bit_idx, value) = read_index_from_bytes(
+        bytes_ptr,
+        byte_idx, bit_idx,
+        0, 0,
+    );
+
+    assert [indices_ptr + idx] = value;
+
+    let next_idx = idx + 1;
+    return indices_from_minimal_inner(
+        bytes_ptr,
+        indices_ptr,
+        next_idx,
+        next_byte_idx,
+        next_bit_idx,
+    );
+}
+
+// Decode minimal Equihash solution bytes into big-endian u32 indices.
+func indices_from_minimal{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
+    solution_words: felt*
+) -> (indices_ptr: felt*, indices_len: felt) {
+    alloc_locals;
+
+    // Minimal solution is 1344 bytes = 336 u32 words.
+    let num_words = 336;
+    let (minimal_bytes_ptr: felt*) = unpack_solution_words_to_bytes(
+        solution_words, num_words
+    );
+
+    let (indices_ptr: felt*) = alloc();
+    let indices_len = Parameters.num_indices;
+
+    let (final_byte_idx, final_bit_idx) = indices_from_minimal_inner(
+        minimal_bytes_ptr,
+        indices_ptr,
+        0,
+        0,
+        0,
+    );
+
+    // All bits should be consumed exactly.
+    assert final_byte_idx = Parameters.minimal_solution_bytes;
+    assert final_bit_idx = 0;
+
+    return (indices_ptr, indices_len);
+}
+
 
 // Returns q and r such that:
 //  0 <= q < rc_bound, 0 <= r < div and value = q * div + r.

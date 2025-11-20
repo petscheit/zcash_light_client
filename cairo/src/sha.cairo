@@ -181,7 +181,6 @@ func sha256{range_check_ptr, pow2_array: felt*, sha256_ptr: felt*}(data: felt*, 
 
     // Maximum bytes_len is 2^32 - 1. This simplifies the padding calculation.
     assert [range_check_ptr] = pow2_array[32] - n_bytes;
-    info_string('range_check_ptr');
     let range_check_ptr = range_check_ptr + 1;
 
     // Set the initial input state to IV.

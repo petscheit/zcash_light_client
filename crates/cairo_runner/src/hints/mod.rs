@@ -20,20 +20,20 @@ pub fn write_inputs(
     _constants: &HashMap<String, Felt252>,
 ) -> Result<(), HintError> {
     let inputs: &InputData = exec_scopes.get_ref::<InputData>("input")?;
-    let solution_indicies_var_addr = get_relocatable_from_var_name(
-        "solution_indicies",
-        vm,
-        &hint_data.ids_data,
-        &hint_data.ap_tracking,
-    )?;
-    let solution_indicies_ptr = vm.get_relocatable(solution_indicies_var_addr)?;
+    // let solution_indicies_var_addr = get_relocatable_from_var_name(
+    //     "solution_indicies",
+    //     vm,
+    //     &hint_data.ids_data,
+    //     &hint_data.ap_tracking,
+    // )?;
+    // let solution_indicies_ptr = vm.get_relocatable(solution_indicies_var_addr)?;
 
-    // Write each next sync committee branch element
-    let mut segment_ptr = solution_indicies_ptr;
-    for index in &inputs.solution_indexes {
-        vm.insert_value(segment_ptr, Felt252::from(*index as u64))?;
-        segment_ptr = (segment_ptr + 1)?;
-    }
+    // // Write each next sync committee branch element
+    // let mut segment_ptr = solution_indicies_ptr;
+    // for index in &inputs.solution_indexes {
+    //     vm.insert_value(segment_ptr, Felt252::from(*index as u64))?;
+    //     segment_ptr = (segment_ptr + 1)?;
+    // }
 
     let header_bytes_var_addr = get_relocatable_from_var_name(
         "header_bytes",

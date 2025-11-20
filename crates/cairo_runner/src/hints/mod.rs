@@ -49,7 +49,19 @@ pub fn write_inputs(
         segment_ptr = (segment_ptr + 1)?;
     }
 
+    let solution_bytes_var_addr = get_relocatable_from_var_name(
+        "solution_bytes",
+        vm,
+        &hint_data.ids_data,
+        &hint_data.ap_tracking,
+    )?;
+    let solution_bytes_ptr = vm.get_relocatable(solution_bytes_var_addr)?;
 
+    let mut segment_ptr = solution_bytes_ptr;
+    for chunk in inputs.solution_bytes.clone() {
+        vm.insert_value(segment_ptr, Felt252::from(chunk))?;
+        segment_ptr = (segment_ptr + 1)?;
+    }
 
     
     

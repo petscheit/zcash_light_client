@@ -18,4 +18,11 @@ namespace Parameters {
 
     // Number of bytes in a leaf hash after expand_array.
     const leaf_hash_bytes = 30;          // 8 * 3 * 25 / 20
+
+    // Minimal solution encoding parameters for (n = 200, k = 9).
+    // Each index is (collision_bit_length + 1) bits.
+    const digit_bit_length = 21;         // 20 + 1
+    const digit_bytes = 3;               // ceil(21 / 8)
+    const num_indices = 512;             // 2^k
+    const minimal_solution_bytes = 1344; // (2^k * digit_bit_length) / 8
 }

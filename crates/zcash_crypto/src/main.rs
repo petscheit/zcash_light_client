@@ -23,17 +23,17 @@ fn main() {
     let header_bytes: Vec<u32> = powheader.chunks_exact(4).map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect();
     let p = Params::new(200, 9).unwrap();
 
-    // println!("indices_per_hash_output {:?}", p.indices_per_hash_output());
-    // println!("hash_output {:?}", p.hash_output());
-    // println!("collision_bit_length {:?}", p.collision_bit_length());
-    // println!("collision_byte_length {:?}", p.collision_byte_length());
-
+    let solution_bytes = header.solution.chunks_exact(4).map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect();        
+    println!("solution_bytes {:?}", solution_bytes);
 
     let solution_indexes = equihash::indices_from_minimal(p, header.solution.as_slice()).unwrap();
+    // println!("solution_indexes {:?}", solution_indexes);
+    // println!("header.solution {:?}", header.solution);
 
     let input = InputData {
         header_bytes: header_bytes,
-        solution_indexes
+        solution_indexes,
+        solution_bytes,
     };
 
 

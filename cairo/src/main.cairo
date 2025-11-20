@@ -8,12 +8,14 @@ from starkware.cairo.common.cairo_builtins import (
 )
 from starkware.cairo.common.cairo_keccak.keccak import finalize_keccak
 from starkware.cairo.common.alloc import alloc
+from starkware.cairo.common.math_cmp import is_le
 
 from cairo.src.constants import Parameters
-from cairo.src.hashing import generate_hash, compute_leaf_hash
+from cairo.src.hashing import generate_hash, compute_leaf_hash, hash_header
 from cairo.src.debug import info_felt_hex, info_uint256
-from cairo.src.merkle import EquihashTree
-from cairo.src.difficulty import get_nbits, target_from_nbits
+from cairo.src.sha import SHA256
+from cairo.src.equihash import EquihashTree
+from cairo.src.difficulty import get_nbits, target_from_nbits, verify_difficulty_filter
 
 func main{
     output_ptr: felt*,
@@ -29,18 +31,25 @@ func main{
     mul_mod_ptr: ModBuiltin*,
 }() {
     alloc_locals;
+    
+    let (sha256_ptr, sha256_ptr_start) = SHA256.init();
 
     let (solution_indicies: felt*) = alloc(); // as u32
     let (header_bytes: felt*) = alloc(); // as 32 bit chunks
 
+    let (solution_bytes: felt*) = alloc(); // minimal solution bytes
     %{ WRITE_INPUTS %}
-
+    
     let indices_len = 512; // for (n=200, k=9)
 
     let (nbits) = get_nbits(header_bytes);
-    info_felt_hex(nbits);
     let (target) = target_from_nbits(nbits);
-    info_uint256(target);
+    
+    with sha256_ptr {
+        let (hash) = hash_header(header_bytes, solution_bytes);
+    }
+
+    verify_difficulty_filter(hash, target);
 
     let (root) = EquihashTree.tree_validator(
         header_pow=header_bytes,
@@ -50,6 +59,9 @@ func main{
     let (ok) = EquihashTree.node_is_zero(root, Parameters.collision_byte_length);
 
     assert ok = 1;
+
+    SHA256.finalize(sha256_start_ptr=sha256_ptr_start, sha256_end_ptr=sha256_ptr);
+
 
     return();
 }

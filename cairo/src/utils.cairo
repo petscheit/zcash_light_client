@@ -5,6 +5,7 @@ from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from cairo.src.constants import Parameters
 from starkware.cairo.common.registers import get_fp_and_pc, get_label_location
+from cairo.src.debug import info_felt_hex, info_string
 
 
 // Expand a 25-byte Equihash digest slice into 10 × 20-bit chunks (30 bytes).
@@ -162,11 +163,71 @@ func shift_byte{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(
     return (new_byte, new_carry);
 }
 
-// Simple wrapper so hashing.cairo can import a div/mod helper.
-func bitwise_divmod{range_check_ptr}(a: felt, b: felt) -> (q: felt, r: felt) {
-    let (q, r) = unsigned_div_rem(a, b);
-    return (q, r);
+// Computes x//y and x%y.
+// Assumption: y must be a power of 2
+// params:
+//   x: the dividend.
+//   y: the divisor.
+// returns:
+//   q: the quotient.
+//   r: the remainder.
+func bitwise_divmod{bitwise_ptr: BitwiseBuiltin*}(x: felt, y: felt) -> (q: felt, r: felt) {
+    if (y == 1) {
+        let bitwise_ptr = bitwise_ptr;
+        return (q=x, r=0);
+    } else {
+        assert bitwise_ptr.x = x;
+        assert bitwise_ptr.y = y - 1;
+        let x_and_y = bitwise_ptr.x_and_y;
+
+        let bitwise_ptr = bitwise_ptr + BitwiseBuiltin.SIZE;
+        return (q=(x - x_and_y) / y, r=x_and_y);
+    }
 }
+
+func construct_header_chunks{range_check_ptr}(header_pow: felt*, solution: felt*) -> (header_chunks: felt*) {
+    alloc_locals;
+
+    // The header_pow array is expected to be large enough to hold the result (35 + 1 + 336 words)
+    // We start writing at index 35.
+    // The structure is: [header (140B)] [len (3B)] [solution (1344B)]
+    // Word 35 will contain: len (3B) || solution[0].byte0 (1B)
+    
+    // 0xfd4005 is the CompactSize encoding for 1344 bytes (0x0540) -> fd 40 05
+
+    let (sol_byte0, _) = unsigned_div_rem([solution], 16777216); // 2^24
+    assert [header_pow + 35] = 0xfd4005 * 256 + sol_byte0;
+
+    construct_header_chunks_inner(header_pow, solution, 0);
+
+    return (header_pow,);
+}
+
+func construct_header_chunks_inner{range_check_ptr}(header_pow: felt*, solution: felt*, index: felt) -> (header_chunks: felt*) {
+    alloc_locals;
+
+    if (index == 335) {
+        // Last chunk (index 335)
+        // We take the remaining 3 bytes of solution[335] and shift them to the left (padding with 0 at the end)
+        let (_, rem) = unsigned_div_rem([solution + index], 16777216); // 2^24
+        assert [header_pow + 36 + index] = rem;
+        return (header_pow,);
+    }
+
+    // Current chunk: take lower 3 bytes
+    let (_, rem) = unsigned_div_rem([solution + index], 16777216); // 2^24
+    
+    // Next chunk: take top byte
+    let (next_byte, _) = unsigned_div_rem([solution + index + 1], 16777216); // 2^24
+
+    // Combine: (rem << 8) | next_byte
+    assert [header_pow + 36 + index] = rem * 256 + next_byte;
+    // let value = rem * 256 + next_byte;
+    // info_felt_hex(value);
+
+    return construct_header_chunks_inner(header_pow, solution, index + 1);
+}
+
 
 // Returns q and r such that:
 //  0 <= q < rc_bound, 0 <= r < div and value = q * div + r.

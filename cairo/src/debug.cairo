@@ -35,7 +35,7 @@ func info_segment_hex(segment_ptr: felt*, len: felt, index: felt) {
     if (index == len) {
         return ();
     }
-    info_string(index);
+    // info_felt_hex(index);
     info_felt_hex([segment_ptr + index]);
     return info_segment_hex(segment_ptr=segment_ptr, len=len, index=index + 1);
 }
@@ -74,7 +74,7 @@ func debug_segment_hex(segment_ptr: felt*, len: felt, index: felt) {
     if (index == len) {
         return ();
     }
-    debug_string(index);
+    debug_felt_hex(index);
     debug_felt_hex([segment_ptr + index]);
     return debug_segment_hex(segment_ptr=segment_ptr, len=len, index=index + 1);
 }

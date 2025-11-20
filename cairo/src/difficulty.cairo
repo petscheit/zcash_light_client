@@ -1,5 +1,5 @@
 from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
-from starkware.cairo.common.uint256 import Uint256, uint256_mul
+from starkware.cairo.common.uint256 import Uint256, uint256_mul, uint256_le, uint256_eq
 from starkware.cairo.common.math import unsigned_div_rem
 from starkware.cairo.common.math_cmp import is_le
 from starkware.cairo.common.bitwise import bitwise_and
@@ -98,4 +98,42 @@ func target_from_nbits{range_check_ptr, bitwise_ptr: BitwiseBuiltin*}(nbits: fel
         let (res_low, _) = uint256_mul(mant_uint, factor_uint);
         return (res_low,);
     }
+}
+
+// PoWLimit(mainnet) = 2^243 − 1, encoded as a 256-bit little-endian Uint256.
+func get_pow_limit() -> (pow_limit: Uint256) {
+    // low  = 2^128 − 1
+    // high = 2^115 − 1
+    return (Uint256(
+        0xffffffffffffffffffffffffffffffff,
+        0x7ffffffffffffffffffffffffffffff,
+    ),);
+}
+
+// Verifies Hash(header) <= ToTarget(nBits) and target within PoW limit.
+func verify_difficulty_filter{range_check_ptr}(
+    header_hash: Uint256, target: Uint256
+) {
+    alloc_locals;
+
+    // Reject zero target (mantissa == 0 in compact encoding).
+    let (is_zero) = uint256_eq(target, Uint256(0, 0));
+    with_attr error_message("InvalidTarget: nBits encodes an invalid target") {
+        assert is_zero = 0;
+    }
+
+    // Enforce target <= PoWLimit.
+    let (pow_limit) = get_pow_limit();
+    let (within_limit) = uint256_le(target, pow_limit);
+    with_attr error_message("TargetAbovePowLimit: target exceeds PoW limit") {
+        assert within_limit = 1;
+    }
+
+    // Enforce Hash(header) <= target.
+    let (hash_ok) = uint256_le(header_hash, target);
+    with_attr error_message("HashAboveTarget: block hash is above target") {
+        assert hash_ok = 1;
+    }
+
+    return ();
 }

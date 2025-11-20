@@ -5,6 +5,7 @@ from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.cairo_sha256.sha256_utils import finalize_sha256
 from cairo.src.utils import felt_divmod, pow2alloc128
+from cairo.src.debug import info_string
 
 namespace SHA256 {
     func init() -> (sha256_ptr: felt*, sha256_ptr_start: felt*) {
@@ -180,6 +181,7 @@ func sha256{range_check_ptr, pow2_array: felt*, sha256_ptr: felt*}(data: felt*, 
 
     // Maximum bytes_len is 2^32 - 1. This simplifies the padding calculation.
     assert [range_check_ptr] = pow2_array[32] - n_bytes;
+    info_string('range_check_ptr');
     let range_check_ptr = range_check_ptr + 1;
 
     // Set the initial input state to IV.

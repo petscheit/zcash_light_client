@@ -1,8 +1,5 @@
 use cairo_runner::{run_stwo, types::InputData};
-use zcash_crypto::equihash::Params;
 use zcash_primitives::block::BlockHeader;
-use zcash_crypto::equihash;
-
 
 fn main() {
     let header = BlockHeader::read(&HEADER_MAINNET_415000[..]).unwrap();
@@ -16,7 +13,10 @@ fn main() {
     powheader.extend_from_slice(&header.bits.to_le_bytes());
     powheader.extend_from_slice(&header.nonce);
 
-    let header_bytes: Vec<u32> = powheader.chunks_exact(4).map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect();
+    let header_bytes: Vec<u32> = powheader
+        .chunks_exact(4)
+        .map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
+        .collect();
     let solution_bytes = header
         .solution
         .chunks_exact(4)
@@ -28,9 +28,16 @@ fn main() {
         solution_bytes,
     };
 
-    run_stwo("cairo/build/main.json", input, "info", "output", true, false).unwrap();
-
-
+    run_stwo(
+        "cairo/build/main.json",
+        input,
+        "info",
+        "output",
+        true,
+        false,
+        Some(415000),
+    )
+    .unwrap();
 
     // verify_pow(&header).unwrap();
     println!("pow verified");

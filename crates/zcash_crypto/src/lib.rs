@@ -8,9 +8,9 @@
 pub mod difficulty;
 pub mod equihash;
 
-use core::fmt;
 use cairo_runner::run_stwo;
 use cairo_runner::types::InputData;
+use core::fmt;
 use zcash_primitives::block::BlockHeader;
 
 pub use difficulty::context::DifficultyContext;
@@ -57,7 +57,7 @@ pub fn verify_pow(header: &BlockHeader) -> Result<(), PowError> {
     difficulty::filter::verify_difficulty(&hash.0, header.bits).map_err(PowError::Difficulty)
 }
 
-pub fn verify_pow_in_cairo(header: &BlockHeader) -> Result<(), PowError> {
+pub fn verify_pow_in_cairo(header: &BlockHeader, height: u32) -> Result<(), PowError> {
     let mut powheader = Vec::with_capacity(140);
     powheader.extend_from_slice(&header.version.to_le_bytes());
     powheader.extend_from_slice(&header.prev_block.0);
@@ -67,7 +67,10 @@ pub fn verify_pow_in_cairo(header: &BlockHeader) -> Result<(), PowError> {
     powheader.extend_from_slice(&header.bits.to_le_bytes());
     powheader.extend_from_slice(&header.nonce);
 
-    let header_bytes: Vec<u32> = powheader.chunks_exact(4).map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]])).collect();
+    let header_bytes: Vec<u32> = powheader
+        .chunks_exact(4)
+        .map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
+        .collect();
     let solution_bytes = header
         .solution
         .chunks_exact(4)
@@ -79,7 +82,17 @@ pub fn verify_pow_in_cairo(header: &BlockHeader) -> Result<(), PowError> {
         solution_bytes,
     };
 
-    run_stwo("cairo/build/main.json", input, "info", "output", true, false).unwrap();
+    let output_dir = format!("output/block_{height}");
+    run_stwo(
+        "cairo/build/main.json",
+        input,
+        "info",
+        &output_dir,
+        true,
+        false,
+        Some(height),
+    )
+    .unwrap();
 
     Ok(())
 }

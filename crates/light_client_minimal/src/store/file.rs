@@ -20,9 +20,10 @@ impl FileStore {
     pub fn new<P: AsRef<Path>>(path: P) -> io::Result<Self> {
         let p = path.as_ref().to_path_buf();
         if let Some(dir) = p.parent()
-            && !dir.exists() {
-                create_dir_all(dir)?;
-            }
+            && !dir.exists()
+        {
+            create_dir_all(dir)?;
+        }
         if !p.exists() {
             File::create(&p)?;
         }
@@ -34,8 +35,7 @@ impl FileStore {
             .create(true)
             .append(true)
             .open(&self.path)?;
-        let line = serde_json::to_string(rec)
-            .map_err(|e| io::Error::other(e.to_string()))?;
+        let line = serde_json::to_string(rec).map_err(|e| io::Error::other(e.to_string()))?;
         file.write_all(line.as_bytes())?;
         file.write_all(b"\n")?;
         Ok(())
@@ -63,9 +63,10 @@ impl Store for FileStore {
                 continue;
             }
             if let Ok(rec) = serde_json::from_str::<Record>(&l)
-                && rec.height == height {
-                    found = Some(rec.header_hex);
-                }
+                && rec.height == height
+            {
+                found = Some(rec.header_hex);
+            }
         }
         Ok(found)
     }

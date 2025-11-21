@@ -1,4 +1,3 @@
-
 use std::collections::HashMap;
 
 use cairo_vm_base::vm::cairo_vm::hint_processor::builtin_hint_processor::builtin_hint_processor_definition::HintProcessorData;
@@ -10,8 +9,7 @@ use cairo_vm_base::vm::cairo_vm::Felt252;
 
 use blake2b_simd::{Hash as Blake2bHash, Params as Blake2bParams, State as Blake2bState};
 
-use crate::constants::{N, K, DIGEST_LEN};
-
+use crate::constants::{DIGEST_LEN, K, N};
 
 /// Initialize BLAKE2b with Zcash personalization and the desired digest length.
 ///
@@ -58,11 +56,10 @@ pub fn generate_hash_hint(
     let mut header_ptr = vm.get_relocatable(header_bytes_var_addr)?;
     for _i in 0..35 {
         let res = vm.get_integer(header_ptr)?;
-        let value: u32 = res.as_ref().clone().try_into().unwrap();
+        let value: u32 = (*res.as_ref()).try_into().unwrap();
         header_felts.push(value);
         header_ptr = (header_ptr + 1)?;
     }
-
 
     let mut pow_header_bytes = Vec::with_capacity(140);
     for val in header_felts {
@@ -71,13 +68,13 @@ pub fn generate_hash_hint(
 
     assert_eq!(pow_header_bytes.len(), 140, "Header must be 140 bytes long");
 
-    let index_ptr = get_relocatable_from_var_name(
-        "index",
-        vm,
-        &hint_data.ids_data,
-        &hint_data.ap_tracking,
-    )?;
-    let index: u32 = vm.get_integer(index_ptr)?.as_ref().clone().try_into().unwrap();
+    let index_ptr =
+        get_relocatable_from_var_name("index", vm, &hint_data.ids_data, &hint_data.ap_tracking)?;
+    let index: u32 = (*vm
+        .get_integer(index_ptr)?
+        .as_ref())
+        .try_into()
+        .unwrap();
 
     let hash = generate_hash(&pow_header_bytes, index);
 

@@ -28,7 +28,7 @@ use cairo_vm_base::vm::cairo_vm::{
 use std::any::Any;
 use std::collections::HashMap;
 
-use crate::hints::hashing::{HINT_GENERATE_HASH, generate_hash_hint};
+use crate::hints::hashing::{generate_hash_hint, HINT_GENERATE_HASH};
 use crate::hints::{write_inputs, WRITE_INPUTS_HINT};
 // use stone_verifier_hints::hints::get_hints as get_stone_verifier_hints;
 
@@ -80,12 +80,8 @@ impl HintProcessorLogic for CustomHintProcessor {
             let hint_code = hpd.code.as_str();
 
             let res = match hint_code {
-                WRITE_INPUTS_HINT => {
-                    write_inputs(vm, exec_scopes, hpd, constants)
-                },
-                HINT_GENERATE_HASH => {
-                    generate_hash_hint(vm, exec_scopes, hpd, constants)
-                },
+                WRITE_INPUTS_HINT => write_inputs(vm, exec_scopes, hpd, constants),
+                HINT_GENERATE_HASH => generate_hash_hint(vm, exec_scopes, hpd, constants),
                 _ => Err(HintError::UnknownHint(
                     hint_code.to_string().into_boxed_str(),
                 )),

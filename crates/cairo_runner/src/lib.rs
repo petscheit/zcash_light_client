@@ -1,9 +1,9 @@
 #![allow(clippy::result_large_err)]
+pub mod constants;
 pub mod error;
 pub mod hint_processor;
-pub mod types;
 pub mod hints;
-pub mod constants;
+pub mod types;
 
 use crate::types::InputData;
 use crate::{error::Error, hint_processor::CustomHintProcessor};
@@ -19,7 +19,7 @@ use cairo_vm_base::vm::cairo_vm::{
     },
 };
 use std::{io, path::Path};
-use tracing::info;
+use tracing::{debug, info};
 
 fn load_program(path: &str) -> Result<Program, Error> {
     // Check if it's an absolute path that doesn't exist, try relative
@@ -45,10 +45,11 @@ fn load_program(path: &str) -> Result<Program, Error> {
 pub fn run_stwo(
     path: &str,
     input: InputData,
-    log_level: &'static str,
+    _log_level: &'static str,
     output_dir: &str,
     prove: bool,
     pie: bool,
+    height: Option<u32>,
 ) -> Result<Option<CairoPie>, Error> {
     let program = load_program(path)?;
     let overall_start = std::time::Instant::now();
@@ -87,29 +88,42 @@ pub fn run_stwo(
         exec_scopes,
     )?;
 
-    println!("Resources: {:?}", cairo_runner.get_execution_resources());
-    let files_start = std::time::Instant::now();
-    generate_stwo_files(&cairo_runner, output_dir)?;
-    println!(
-        "Trace/memory/public/private generation took: {:.1?}",
-        files_start.elapsed()
+    debug!(
+        "Execution resources: {:?}",
+        cairo_runner.get_execution_resources()
     );
+    let trace_start = std::time::Instant::now();
+    generate_stwo_files(&cairo_runner, output_dir)?;
+    let trace_duration = trace_start.elapsed();
+
     if prove {
         let prove_start = std::time::Instant::now();
-        let res = stwo_prover::generate_proof(
+        let proof_filename = match height {
+            Some(h) => format!("proof_block_{h}.json"),
+            None => "proof.json".to_string(),
+        };
+        let proof_path = Path::new(output_dir).join(&proof_filename);
+        let _res = stwo_prover::generate_proof(
             &Path::new(output_dir).join("pub.json"),
             &Path::new(output_dir).join("priv.json"),
             Some(true),
             Some(stwo_prover::ProofFormat::CairoSerde),
-        ).unwrap();
-        println!(
-            "Proof generated successfully in {:.1?}: {:?}",
-            prove_start.elapsed(),
-            res
+            Some(proof_path.clone()),
+        )
+        .unwrap();
+        let prove_duration = prove_start.elapsed();
+        info!(
+            "Trace generation: {:.1?}, Proof generation: {:.1?}",
+            trace_duration, prove_duration
         );
+    } else {
+        info!("Trace generation: {:.1?}", trace_duration);
     }
 
-    println!("STWO end-to-end took: {:.1?}", overall_start.elapsed());
+    info!(
+        "Cairo PoW verification completed in {:.1?}",
+        overall_start.elapsed()
+    );
 
     if pie {
         let pie = cairo_runner.get_cairo_pie()?;
@@ -119,7 +133,7 @@ pub fn run_stwo(
     }
 }
 
-pub fn run(path: &str, input: InputData, log_level: &'static str) -> Result<CairoPie, Error> {
+pub fn run(path: &str, input: InputData, _log_level: &'static str) -> Result<CairoPie, Error> {
     let program = load_program(path)?;
     let cairo_run_config = cairo_run::CairoRunConfig {
         allow_missing_builtins: Some(true),
@@ -138,7 +152,10 @@ pub fn run(path: &str, input: InputData, log_level: &'static str) -> Result<Cair
         exec_scopes,
     )?;
 
-    println!("Resources: {:?}", cairo_runner.get_execution_resources());
+    debug!(
+        "Execution resources: {:?}",
+        cairo_runner.get_execution_resources()
+    );
 
     let pie = cairo_runner.get_cairo_pie()?;
     Ok(pie)

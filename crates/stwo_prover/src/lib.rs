@@ -14,7 +14,7 @@ use stwo::prover::backend::simd::SimdBackend;
 use stwo::prover::backend::BackendForChannel;
 use stwo::prover::ProvingError;
 use stwo_cairo_adapter::vm_import::{adapt_vm_output, VmImportError};
-use stwo_cairo_adapter::{log_prover_input, ProverInput};
+use stwo_cairo_adapter::ProverInput;
 use stwo_cairo_prover::prover::{prove_cairo, ChannelHash, ProverParameters};
 use stwo_cairo_serialize::CairoSerialize;
 use stwo_cairo_utils::file_utils::{create_file, IoErrorWithPath};
@@ -51,12 +51,11 @@ pub fn generate_proof(
     priv_json: &Path,
     verify: Option<bool>,
     proof_format: Option<ProofFormat>,
+    proof_path: Option<PathBuf>,
 ) -> Result<PathBuf, Error> {
     let _span = span!(Level::INFO, "run").entered();
 
     let vm_output: ProverInput = adapt_vm_output(pub_json, priv_json)?;
-
-    log_prover_input(&vm_output);
 
     // Hardcode prover parameters
     let proof_params = ProverParameters {
@@ -83,7 +82,7 @@ pub fn generate_proof(
     };
 
     let out_dir = pub_json.parent().unwrap_or_else(|| Path::new("."));
-    let proof_path = out_dir.join("proof.json");
+    let proof_path = proof_path.unwrap_or_else(|| out_dir.join("proof.json"));
 
     run_inner_fn(
         vm_output,

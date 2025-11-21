@@ -2,6 +2,7 @@ use core::fmt;
 
 use crate::net::rpc::{RpcClient, RpcError};
 use crate::store::Store;
+use tracing::{debug, info};
 use zcash_crypto::{DifficultyContext, verify_pow_in_cairo, verify_pow_with_context};
 use zcash_primitives::block::BlockHeader;
 
@@ -165,7 +166,9 @@ pub async fn sync_chain<S: Store>(
     let mut height = effective_start;
 
     loop {
-        println!("Syncing header at height {height}...");
+        info!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+        info!("Block {height}");
+        info!("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
         let header = rpc
             .get_block_header_by_height(height)
             .await
@@ -173,18 +176,18 @@ pub async fn sync_chain<S: Store>(
 
         verify_pow_with_context(&header, height, &mut ctx)
             .map_err(|e| VerifyHeaderError::Pow(VerifyPowError::from(e)))?;
-        println!("  Rust PoW verification: OK ✅");
+        debug!("Rust PoW verification passed");
 
-        verify_pow_in_cairo(&header)
+        verify_pow_in_cairo(&header, height)
             .map_err(|e| VerifyHeaderError::Pow(VerifyPowError::from(e)))?;
-        println!("  Cairo PoW verification: OK ✅");
+        debug!("Cairo PoW verification passed");
 
         let header_hex = header_to_hex(&header)?;
         store
             .put(height, &header_hex)
             .map_err(|e| VerifyHeaderError::Rpc(RpcError::Client(format!("store header: {e}"))))?;
 
-        println!("  Header stored successfully.");
+        info!("✓ Block {height} verified and stored");
 
         height = match height.checked_add(1) {
             Some(next) => next,

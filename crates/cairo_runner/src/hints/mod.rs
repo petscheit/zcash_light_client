@@ -12,7 +12,6 @@ use crate::types::InputData;
 
 pub const WRITE_INPUTS_HINT: &str = "WRITE_INPUTS";
 
-
 pub fn write_inputs(
     vm: &mut VirtualMachine,
     exec_scopes: &mut ExecutionScopes,

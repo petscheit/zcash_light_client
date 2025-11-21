@@ -68,6 +68,7 @@ struct JsonRpcError {
 struct JsonRpcResponse<T> {
     result: Option<T>,
     error: Option<JsonRpcError>,
+    #[allow(dead_code)]
     id: Value,
 }
 

@@ -102,27 +102,3 @@ cargo run --release -p zcash_crypto
 
 # The Cairo implementation is invoked automatically during light client sync
 ```
-
-## Dependencies
-
-### Rust
-- `zcash_primitives`: ZCash block header types
-- `blake2b_simd`: BLAKE2b hashing for Equihash
-- `sha2`: SHA256 for header hashing
-- `cairo-vm-base`: Cairo VM for executing Cairo programs
-- `stwo`: STWO prover for generating zero-knowledge proofs
-
-### Cairo
-- Cairo Zero with builtins: `pedersen`, `range_check`, `bitwise`, `keccak`, `poseidon`, `sha256`
-
-## Security Considerations
-
-1. **Cairo Implementation is Unsound**: The Cairo implementation does not verify contextual difficulty, making it vulnerable to difficulty manipulation attacks.
-
-2. **Unconstrained BLAKE2b**: The BLAKE2b computation in Cairo uses hints that are not proven, requiring trust in the hint implementation.
-
-3. **Experimental**: This is a research implementation and should not be used in production without additional security audits.
-
-## License
-
-MIT OR Apache-2.0

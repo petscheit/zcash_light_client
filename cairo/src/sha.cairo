@@ -4,7 +4,7 @@ from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.memcpy import memcpy
 from starkware.cairo.common.memset import memset
 from starkware.cairo.common.cairo_sha256.sha256_utils import finalize_sha256
-from cairo.src.utils import felt_divmod, pow2alloc128
+from cairo.src.bitwise_utils import felt_divmod, pow2alloc128
 from cairo.src.debug import info_string
 
 namespace SHA256 {

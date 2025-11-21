@@ -3,7 +3,8 @@ from starkware.cairo.common.cairo_builtins import BitwiseBuiltin
 from starkware.cairo.common.uint256 import uint256_reverse_endian, Uint256
 
 from cairo.src.constants import Parameters
-from cairo.src.utils import expand_array, bitwise_divmod, construct_header_chunks, pow2alloc128
+from cairo.src.utils import expand_array, construct_header_chunks
+from cairo.src.bitwise_utils import bitwise_divmod, pow2alloc128
 from cairo.src.sha import SHA256, HashUtils
 from cairo.src.debug import info_segment_hex, info_string, info_felt_hex, info_uint256
 

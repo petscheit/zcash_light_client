@@ -7,7 +7,7 @@ from starkware.cairo.common.math_cmp import is_le
 
 from cairo.src.constants import Parameters
 from cairo.src.hashing import compute_leaf_hash
-from cairo.src.utils import bitwise_divmod, pow2alloc128
+from cairo.src.bitwise_utils import bitwise_divmod, pow2alloc128
 
 // Node used for the Equihash merge tree. It mirrors the Rust `Node`:
 // - `hash_ptr` points to a byte array (as felts) of length `hash_len`.

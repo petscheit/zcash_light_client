@@ -22,8 +22,7 @@ fn print_banner() {
     println!("{}", "═══════════════════════════════════════════════════════════════════════════════".bright_magenta());
     println!("{}", figure.to_string().bright_cyan().bold());
     println!("{}", "═══════════════════════════════════════════════════════════════════════════════".bright_magenta());
-    println!("{}", "ZK Client for Zcash • Written in Cairo Zero".bright_yellow());
-    println!("{}", "Inspired by Bankai".truecolor(255, 165, 0));
+    println!("{}", "ZK Client for Zcash • Written in Cairo Zero".truecolor(255, 165, 0));
     println!("{}", "═══════════════════════════════════════════════════════════════════════════════".bright_magenta());
     println!();
 }

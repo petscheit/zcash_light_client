@@ -140,6 +140,7 @@ pub async fn sync_chain<S: Store>(
     rpc: &RpcClient,
     store: &S,
     start_height: u32,
+    prove: bool,
 ) -> Result<(), VerifyHeaderError> {
     const CONTEXT_BLOCKS: u32 = 28;
     if start_height < CONTEXT_BLOCKS {
@@ -178,7 +179,7 @@ pub async fn sync_chain<S: Store>(
             .map_err(|e| VerifyHeaderError::Pow(VerifyPowError::from(e)))?;
         debug!("Rust PoW verification passed");
 
-        verify_pow_in_cairo(&header, height)
+        verify_pow_in_cairo(&header, height, prove)
             .map_err(|e| VerifyHeaderError::Pow(VerifyPowError::from(e)))?;
         debug!("Cairo PoW verification passed");
 
@@ -187,7 +188,11 @@ pub async fn sync_chain<S: Store>(
             .put(height, &header_hex)
             .map_err(|e| VerifyHeaderError::Rpc(RpcError::Client(format!("store header: {e}"))))?;
 
-        info!("✓ Block {height} verified and stored");
+        if prove {
+            info!("✓ Block {height} verified, proven and stored");
+        } else {
+            info!("✓ Block {height} verified and stored");
+        }
 
         height = match height.checked_add(1) {
             Some(next) => next,

@@ -57,7 +57,7 @@ pub fn verify_pow(header: &BlockHeader) -> Result<(), PowError> {
     difficulty::filter::verify_difficulty(&hash.0, header.bits).map_err(PowError::Difficulty)
 }
 
-pub fn verify_pow_in_cairo(header: &BlockHeader, height: u32) -> Result<(), PowError> {
+pub fn verify_pow_in_cairo(header: &BlockHeader, height: u32, prove: bool) -> Result<(), PowError> {
     let mut powheader = Vec::with_capacity(140);
     powheader.extend_from_slice(&header.version.to_le_bytes());
     powheader.extend_from_slice(&header.prev_block.0);
@@ -88,7 +88,7 @@ pub fn verify_pow_in_cairo(header: &BlockHeader, height: u32) -> Result<(), PowE
         input,
         "info",
         &output_dir,
-        true,
+        prove,
         false,
         Some(height),
     )

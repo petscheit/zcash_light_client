@@ -104,16 +104,22 @@ export ZCASH_RPC_URL=http://127.0.0.1:8232
 # Optional: Set starting height (default: 3,000,000)
 export START_HEIGHT=3000000
 
-# Run the light client
+# Run the light client (without proof generation)
 cargo run --release -p light_client_minimal
+
+# Run the light client with STWO proof generation
+cargo run --release -p light_client_minimal -- --prove
 ```
+
+**Command-line options:**
+- `--prove` / `-p`: Generate STWO zero-knowledge proofs for each verified block. When enabled, proofs are saved to `output/block_{height}/proof_block_{height}.json`. Note: Proof generation significantly increases processing time per block.
 
 The light client will:
 - Fetch headers from the ZCash RPC endpoint
 - Verify each header using both Rust and Cairo implementations
 - Persist verified headers to `./data/headers.jsonl`
 - Resume from the last verified height on restart
-- Generate proofs for each block in `output/block_{height}/proof_block_{height}.json`
+- Optionally generate proofs for each block (when `--prove` flag is used)
 
 ### Verifying a Single Header
 

@@ -65,14 +65,35 @@ The Equihash verification requires BLAKE2b hashing, which is not available as a 
 
 ### Building
 
+#### Rust
+
 ```bash
 # Build all crates
 cargo build --release
+```
+
+#### Cairo
+
+First-time setup (only needed once):
+
+```bash
+# Set up the virtual environment and install dependencies
+make setup
+```
+
+Building Cairo programs:
+
+```bash
+# Activate the virtual environment
+source scripts/activate.sh
 
 # Build Cairo programs
-cd cairo
-scarb build
+make build-cairo
 ```
+
+The Cairo build process:
+1. Activates a Python virtual environment with Cairo tooling
+2. Compiles `cairo/src/main.cairo` to `cairo/build/main.json` in proof mode
 
 ### Running the Light Client
 

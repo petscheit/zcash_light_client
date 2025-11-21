@@ -5,11 +5,7 @@ use zcash_crypto::equihash;
 
 
 fn main() {
-
-
     let header = BlockHeader::read(&HEADER_MAINNET_415000[..]).unwrap();
-
-    println!("header: {:?}", header.hash());
 
     let mut powheader = Vec::with_capacity(140);
     powheader.extend_from_slice(&header.version.to_le_bytes());
@@ -27,18 +23,10 @@ fn main() {
         .map(|chunk| u32::from_be_bytes([chunk[0], chunk[1], chunk[2], chunk[3]]))
         .collect();
 
-    let indices_rust = equihash::indices_from_minimal(
-        Params::new(200, 9).unwrap(),
-        header.solution.as_slice(),
-    )
-    .unwrap();
-
     let input = InputData {
         header_bytes,
-        solution_indexes: indices_rust.clone(),
         solution_bytes,
     };
-
 
     run_stwo("cairo/build/main.json", input, "info", "output", true, false).unwrap();
 

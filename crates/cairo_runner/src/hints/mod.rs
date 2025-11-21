@@ -63,9 +63,5 @@ pub fn write_inputs(
         segment_ptr = (segment_ptr + 1)?;
     }
 
-    
-    
-    
-
     Ok(())
 }

@@ -56,9 +56,7 @@ pub(crate) const POW_LIMIT_LE: Target = [
 /// header.
 pub fn verify_difficulty_filter(header_hash: &[u8; 32], n_bits: u32) -> Result<(), DiffError> {
     let hash_le: Target = *header_hash;
-    println!("nBits: {:?}", hex::encode(n_bits.to_be_bytes()));
     let target_le = target_from_nbits(n_bits);
-    println!("target_le: {:?}", hex::encode(target_le));
 
     if target_le == [0u8; 32] {
         return Err(DiffError::InvalidTarget);
